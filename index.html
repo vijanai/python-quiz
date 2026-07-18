@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python & ArcPy — Module Knowledge Checks</title>
+<style>
+  :root{
+    --navy:#0B3D3A;
+    --teal:#0F766E;
+    --teal-light:#E7F3F1;
+    --amber:#D97706;
+    --ink:#1F2937;
+    --slate:#5B6B72;
+    --line:#DCE7E5;
+    --bg:#F6FAF9;
+    --red:#B42318;
+    --green:#0F7A4F;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 80px;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:22px;
+  }
+  .brand{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--teal);
+    font-weight:700;
+  }
+  .coord{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--slate);
+  }
+
+  .picker{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:24px;
+  }
+  .pill{
+    font-family:var(--mono);
+    font-size:12px;
+    padding:7px 12px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--slate);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .pill:hover{border-color:var(--teal);color:var(--teal);}
+  .pill.active{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+  }
+  .pill.done::after{
+    content:" \2713";
+  }
+
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:28px;
+  }
+
+  .modtitle{
+    font-size:13px;
+    font-weight:700;
+    color:var(--teal);
+    letter-spacing:.03em;
+    margin:0 0 4px;
+  }
+  .progress-row{
+    display:flex;align-items:center;gap:10px;margin-bottom:22px;
+  }
+  .progress-track{
+    flex:1;height:6px;background:var(--teal-light);border-radius:999px;overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;background:var(--teal);border-radius:999px;transition:width .3s ease;
+  }
+  .progress-label{
+    font-family:var(--mono);font-size:12px;color:var(--slate);white-space:nowrap;
+  }
+
+  .question{
+    font-size:18px;
+    font-weight:600;
+    line-height:1.45;
+    margin:0 0 18px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+  .option{
+    display:flex;align-items:center;gap:12px;
+    padding:13px 15px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    cursor:pointer;
+    font-size:15px;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .option:hover{border-color:var(--teal);}
+  .option .letter{
+    font-family:var(--mono);
+    font-size:12px;
+    font-weight:700;
+    color:var(--slate);
+    width:20px;
+  }
+  .option.selected{border-color:var(--teal);background:var(--teal-light);}
+  .option.correct{border-color:var(--green);background:#EAF7F0;}
+  .option.correct .letter{color:var(--green);}
+  .option.incorrect{border-color:var(--red);background:#FDECEC;}
+  .option.incorrect .letter{color:var(--red);}
+  .option.disabled{cursor:default;}
+
+  .feedback{
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:18px;
+    min-height:20px;
+  }
+  .feedback.correct{color:var(--green);}
+  .feedback.incorrect{color:var(--red);}
+
+  .actions{display:flex;justify-content:flex-end;gap:10px;}
+  button.next{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    padding:11px 22px;
+    border-radius:9px;
+    border:none;
+    background:var(--navy);
+    color:#fff;
+    cursor:pointer;
+  }
+  button.next:disabled{background:#B9C7C4;cursor:not-allowed;}
+  button.next:hover:not(:disabled){background:var(--teal);}
+
+  .result{
+    text-align:center;
+    padding:20px 0 4px;
+  }
+  .result .score{
+    font-family:var(--mono);
+    font-size:48px;
+    font-weight:700;
+    color:var(--navy);
+    margin:6px 0;
+  }
+  .result .sub{color:var(--slate);font-size:14px;margin-bottom:22px;}
+  .result button{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    padding:11px 22px;
+    border-radius:9px;
+    border:1.5px solid var(--navy);
+    background:#fff;
+    color:var(--navy);
+    cursor:pointer;
+  }
+  .result button:hover{background:var(--teal-light);}
+
+  @media (max-width:480px){
+    .card{padding:20px;}
+    .question{font-size:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">VIJAN AI ACADEMY · KNOWLEDGE CHECK</div>
+    <div class="coord" id="coord">MOD 01/12 · Q 1/5</div>
+  </div>
+
+  <div class="picker" id="picker"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const QUIZ_DATA = [
+  {
+    module: "Module 01 — Python Fundamentals",
+    questions: [
+      { q: "Which of the following is a valid Python variable name?", options: ["2ndValue", "my_value", "my-value", "class"], answer: 1 },
+      { q: "Which data type would you use to store True/False in Python?", options: ["int", "bool", "str", "float"], answer: 1 },
+      { q: "What best describes a Python 'for loop'?", options: ["Repeats a block exactly once", "Runs until a condition becomes false", "Iterates over a sequence of items", "Defines a new class"], answer: 2 },
+      { q: "Which keyword is used to define a class in Python?", options: ["def", "class", "object", "struct"], answer: 1 },
+      { q: "Which statement correctly checks a condition in Python?", options: ["if x = 5:", "if x == 5:", "if (x eq 5)", "when x==5:"], answer: 1 }
+    ]
+  },
+  {
+    module: "Module 02 — Error Handling",
+    questions: [
+      { q: "Which keyword pair is used in Python to handle exceptions?", options: ["try / except", "catch / throw", "error / handle", "if / else"], answer: 0 },
+      { q: "What happens if an exception occurs with no matching except block?", options: ["The program ignores it", "The program crashes with an unhandled error", "Python auto-fixes it", "Nothing happens"], answer: 1 },
+      { q: "Which is good practice in error handling?", options: ["A bare except that silently ignores everything", "Catching specific exceptions and handling them", "Never using try/except", "Only printing errors, never logging"], answer: 1 },
+      { q: "Why capture error messages in a script?", options: ["To make code longer", "To help debug what went wrong", "To slow down execution", "It has no purpose"], answer: 1 },
+      { q: "Which block always runs, exception or not?", options: ["try", "except", "finally", "raise"], answer: 2 }
+    ]
+  },
+  {
+    module: "Module 03 — File Handling",
+    questions: [
+      { q: "Which mode opens a file for reading only?", options: ["'w'", "'r'", "'a'", "'x'"], answer: 1 },
+      { q: "Which mode creates a new file for writing?", options: ["'r'", "'w'", "'rb'", "'ab'"], answer: 1 },
+      { q: "What does the 'a' mode do when opening a file?", options: ["Overwrites the file", "Appends to the end of the file", "Deletes the file", "Opens read-only"], answer: 1 },
+      { q: "Which function deletes a file using the os module?", options: ["os.delete()", "os.remove()", "os.erase()", "file.delete()"], answer: 1 },
+      { q: "Why use 'with open(...) as f:' instead of plain open()?", options: ["It's faster", "It automatically closes the file", "It prevents typos", "ArcPy requires it"], answer: 1 }
+    ]
+  },
+  {
+    module: "Module 04 — Introduction to ArcPy",
+    questions: [
+      { q: "What is ArcPy?", options: ["A standalone GIS application", "A Python package for automating ArcGIS tasks", "A database engine", "A web mapping library"], answer: 1 },
+      { q: "Which statement brings ArcPy into a script?", options: ["include arcpy", "import arcpy", "using arcpy", "require arcpy"], answer: 1 },
+      { q: "Which ArcPy module is used for map document automation?", options: ["arcpy.sa", "arcpy.da", "arcpy.mapping", "arcpy.na"], answer: 2 },
+      { q: "What does the Spatial Analyst module let you do?", options: ["Manage licensing", "Perform raster & spatial analysis", "Edit map layouts", "Handle file I/O"], answer: 1 },
+      { q: "What's the main benefit of using ArcPy?", options: ["No GIS knowledge needed", "Automates repetitive geoprocessing tasks", "Removes the need for a license", "Only works outside ArcGIS"], answer: 1 }
+    ]
+  },
+  {
+    module: "Module 05 — License & Extension Access",
+    questions: [
+      { q: "Why must a script check out a license/extension first?", options: ["It's optional", "Some tools require it to function", "It speeds up the script", "It has no effect"], answer: 1 },
+      { q: "Which is a valid ArcGIS Desktop license level?", options: ["Basic", "Ultimate", "Cloud Standard", "Server Premium"], answer: 0 },
+      { q: "What happens if a script uses Spatial Analyst without checking it out?", options: ["Runs fine regardless", "The tool fails with a licensing error", "ArcGIS auto-purchases it", "Nothing happens"], answer: 1 },
+      { q: "Which function checks out an extension in ArcPy?", options: ["arcpy.CheckOutExtension()", "arcpy.GetExtension()", "arcpy.License()", "arcpy.Extension.Check()"], answer: 0 },
+      { q: "Best practice after using an extension?", options: ["Leave it checked out", "Check it back in with CheckInExtension()", "Restart ArcGIS", "Nothing needed"], answer: 1 }
+    ]
+  },
+  {
+    module: "Module 06 — Environment Configuration",
+    questions: [
+      { q: "What is an ArcPy 'environment variable'?", options: ["An OS setting only", "A setting controlling geoprocessing behavior (e.g. workspace)", "A type of Python variable", "A hardware setting"], answer: 1 },
+      { q: "Which is a commonly used ArcPy environment setting?", options: ["arcpy.env.workspace", "arcpy.settings.folder", "arcpy.config.path", "arcpy.dir.workspace"], answer: 0 },
+      { q: "What does arcpy.env.overwriteOutput = True do?", options: ["Deletes all data permanently", "Allows overwriting existing output without an error", "Backs up the workspace", "Has no effect"], answer: 1 },
+      { q: "Why read environment variables at the start of a script?", options: ["To confirm correct workspace/settings first", "To slow the script down", "It's required syntax only", "To auto-generate documentation"], answer: 0 },
+      { q: "Which is NOT a typical ArcPy environment setting?", options: ["workspace", "overwriteOutput", "extent", "print statement"], answer: 3 }
+    ]
+  },
+  {
+    module: "Module 07 — Data Information",
+    questions: [
+      { q: "What does arcpy.Describe() do?", options: ["Deletes a dataset", "Returns metadata/properties about a dataset", "Creates a new feature class", "Prints a map layout"], answer: 1 },
+      { q: "Which property tells you a feature class's geometry type?", options: ["shapeType", "workspaceType", "extension", "dataType"], answer: 0 },
+      { q: "Which property gives raster cell size info?", options: ["meanCellHeight", "rowCount", "layerName", "fields"], answer: 0 },
+      { q: "What does a 'workspace property' describe?", options: ["Details about one feature", "Info about the geodatabase/folder used as data source", "The color of a layer", "The Python version"], answer: 1 },
+      { q: "Why check data properties before processing?", options: ["No real benefit", "Helps avoid errors by validating data first", "Required by Python syntax", "Auto-fixes bad data"], answer: 1 }
+    ]
+  },
+  {
+    module: "Module 08 — ArcPy Data Access (da) Module",
+    questions: [
+      { q: "What is the main purpose of arcpy.da?", options: ["Managing map layouts", "Efficiently accessing/editing data via cursors", "Handling error messages", "Configuring licenses"], answer: 1 },
+      { q: "Which cursor adds new rows to a feature class?", options: ["SearchCursor", "UpdateCursor", "InsertCursor", "ReadCursor"], answer: 2 },
+      { q: "Which cursor modifies existing rows?", options: ["InsertCursor", "UpdateCursor", "SearchCursor", "DeleteCursor"], answer: 1 },
+      { q: "Which cursor only reads data, without changes?", options: ["SearchCursor", "UpdateCursor", "InsertCursor", "EditCursor"], answer: 0 },
+      { q: "Why is arcpy.da preferred over older cursor methods?", options: ["It's slower but safer", "Better performance & more Pythonic syntax", "It doesn't support editing", "It only works with rasters"], answer: 1 }
+    ]
+  },
+  {
+    module: "Module 09 — Geoprocessing Tools with Python",
+    questions: [
+      { q: "What is a Python script tool in ArcGIS?", options: ["A file that can't be used inside ArcGIS", "A custom tool built from a script, added to a toolbox", "A built-in tool only", "A raster function type"], answer: 1 },
+      { q: "What is a 'progressor' used for?", options: ["Speeding up processing", "Showing a progress bar/status during execution", "Validating input data", "Handling licensing"], answer: 1 },
+      { q: "Which function writes messages back to the tool dialog?", options: ["print() only", "arcpy.AddMessage()", "arcpy.Log()", "sys.write()"], answer: 1 },
+      { q: "Why add progress messages to a geoprocessing script?", options: ["Makes the script run faster", "Keeps users informed during execution", "Required syntax", "No real use"], answer: 1 },
+      { q: "What does 'executing a GP tool using Python' mean?", options: ["Manually clicking through the ArcGIS UI", "Calling a GP tool as a function in a script", "Writing tool documentation", "Installing ArcGIS"], answer: 1 }
+    ]
+  },
+  {
+    module: "Module 10 — Developing Python AddIns",
+    questions: [
+      { q: "What is a Python AddIn in ArcGIS?", options: ["A downloadable dataset", "A custom UI extension (buttons/toolbars) built with Python", "A licensing extension", "A map file format"], answer: 1 },
+      { q: "Which of these can be built using Python AddIns?", options: ["Custom buttons and toolbars", "New coordinate systems", "New license types", "New file formats"], answer: 0 },
+      { q: "What's the benefit of a custom AddIn button?", options: ["Replaces ArcGIS entirely", "Lets users trigger custom Python code from the UI", "Auto-fixes data errors", "Removes licensing needs"], answer: 1 },
+      { q: "An AddIn toolbar is best described as:", options: ["A single command-line script", "A container holding custom AddIn tools in the UI", "A type of geodatabase", "A raster analysis tool"], answer: 1 },
+      { q: "What's essential before building Python AddIns?", options: ["Basic Python scripting knowledge", "SQL knowledge only", "Web design skills", "No prior knowledge needed"], answer: 0 }
+    ]
+  },
+  {
+    module: "Module 11 — ArcPy Spatial Analyst Module",
+    questions: [
+      { q: "What does the Spatial Analyst (sa) module primarily work with?", options: ["Text files", "Raster data & spatial analysis functions", "Map layouts only", "User accounts"], answer: 1 },
+      { q: "Which extension license is required for most SA functions?", options: ["3D Analyst", "Spatial Analyst", "Network Analyst", "Data Reviewer"], answer: 1 },
+      { q: "Which is an example of a Spatial Analyst function?", options: ["Slope calculation", "Table joining", "File deletion", "Map export"], answer: 0 },
+      { q: "Why automate Spatial Analyst functions with Python?", options: ["To run repetitive raster analyses quickly & consistently", "SA can't run without Python", "It's the only way to view raster data", "Removes need for raster data"], answer: 0 },
+      { q: "What must you do before running SA tools in a script?", options: ["Nothing special", "Check out the Spatial Analyst license", "Convert all data to vector", "Disable ArcPy"], answer: 1 }
+    ]
+  },
+  {
+    module: "Module 12 — ArcPy Mapping Module",
+    questions: [
+      { q: "What does the ArcPy mapping module help automate?", options: ["Python error handling", "Map documents, layers & layout elements", "Raster cell size calculations", "File compression"], answer: 1 },
+      { q: "What is a 'Data Frame' in ArcPy mapping?", options: ["A Python data structure", "A map element that displays layers in a document", "A type of cursor", "A licensing extension"], answer: 1 },
+      { q: "Which task uses the mapping module?", options: ["Writing custom error messages", "Assigning a new data source to a layer", "Reading environment variables", "Creating AddIn buttons"], answer: 1 },
+      { q: "What does 'Field Mapping' let you do?", options: ["Control how input fields merge/map into output", "Change license types", "Calculate raster slope", "Create toolbars"], answer: 0 },
+      { q: "Why automate map layouts/exports with Python?", options: ["Replaces the need for GIS data", "Saves time producing many maps with a consistent layout", "Eliminates need for a coordinate system", "Only works for one map at a time"], answer: 1 }
+    ]
+  }
+];
+
+let currentModule = 0;
+let currentQ = 0;
+let selected = null;
+let answered = false;
+let scores = QUIZ_DATA.map(() => ({ correct: 0, done: false }));
+
+const picker = document.getElementById("picker");
+const card = document.getElementById("card");
+const coord = document.getElementById("coord");
+
+function renderPicker(){
+  picker.innerHTML = "";
+  QUIZ_DATA.forEach((m, i) => {
+    const btn = document.createElement("div");
+    btn.className = "pill" + (i === currentModule ? " active" : "") + (scores[i].done ? " done" : "");
+    btn.textContent = "M" + String(i+1).padStart(2,"0");
+    btn.onclick = () => { currentModule = i; currentQ = 0; selected = null; answered = false; render(); };
+    picker.appendChild(btn);
+  });
+}
+
+function render(){
+  renderPicker();
+  const mod = QUIZ_DATA[currentModule];
+  const total = mod.questions.length;
+
+  if (currentQ >= total){
+    const pct = Math.round((scores[currentModule].correct / total) * 100);
+    coord.textContent = `MOD ${String(currentModule+1).padStart(2,"0")}/12 · COMPLETE`;
+    card.innerHTML = `
+      <div class="result">
+        <div class="modtitle">${mod.module}</div>
+        <div class="score">${pct}%</div>
+        <div class="sub">${scores[currentModule].correct} of ${total} correct</div>
+        <button id="retry">Retry this module</button>
+      </div>
+    `;
+    document.getElementById("retry").onclick = () => {
+      currentQ = 0; selected = null; answered = false;
+      scores[currentModule] = { correct: 0, done: false };
+      render();
+    };
+    return;
+  }
+
+  const item = mod.questions[currentQ];
+  coord.textContent = `MOD ${String(currentModule+1).padStart(2,"0")}/12 · Q ${currentQ+1}/${total}`;
+
+  const letters = ["A","B","C","D"];
+  card.innerHTML = `
+    <div class="modtitle">${mod.module}</div>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" style="width:${(currentQ/total)*100}%"></div></div>
+      <div class="progress-label">${currentQ+1} / ${total}</div>
+    </div>
+    <div class="question">${item.q}</div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="next" id="nextBtn" disabled>${currentQ === total - 1 ? "See results" : "Next question"}</button>
+    </div>
+  `;
+
+  const optsEl = document.getElementById("options");
+  item.options.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "option";
+    div.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+    div.onclick = () => selectOption(i, item);
+    optsEl.appendChild(div);
+  });
+}
+
+function selectOption(i, item){
+  if (answered) return;
+  answered = true;
+  selected = i;
+  const opts = document.querySelectorAll(".option");
+  opts.forEach((el, idx) => {
+    el.classList.add("disabled");
+    if (idx === item.answer) el.classList.add("correct");
+    else if (idx === i) el.classList.add("incorrect");
+  });
+  const fb = document.getElementById("feedback");
+  if (i === item.answer){
+    scores[currentModule].correct++;
+    fb.textContent = "Correct.";
+    fb.className = "feedback correct";
+  } else {
+    fb.textContent = "Not quite — correct answer highlighted above.";
+    fb.className = "feedback incorrect";
+  }
+  document.getElementById("nextBtn").disabled = false;
+  document.getElementById("nextBtn").onclick = () => {
+    currentQ++;
+    selected = null; answered = false;
+    if (currentQ >= QUIZ_DATA[currentModule].questions.length){
+      scores[currentModule].done = true;
+    }
+    render();
+  };
+}
+
+render();
+</script>
+</body>
+</html>
